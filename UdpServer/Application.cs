@@ -1,15 +1,21 @@
-﻿using System.Net;
-using System.Net.Sockets;
-using UdpServer.Services;
+﻿using System.Net.Sockets;
+using System.Net;
+using UdpServer.Services.Services;
 
-class Program
+namespace UdpServer;
+
+//TODO: Add services
+public class Application(ChatService chats, ClientService clients, GroupService groups)
 {
-    public static async Task Main(string[] args)
+    private readonly ChatService chats = chats;
+    private readonly ClientService clients = clients;
+    private readonly GroupService groups = groups;
+
+    public async void Start()
     {
-        //Create listener
         UdpService listener = new(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1024));
         Console.WriteLine("Server started...");
-        Console.WriteLine("Waiting for clients...");
+        Console.WriteLine("Waiting for clients...\n");
 
         try
         {
@@ -17,8 +23,7 @@ class Program
             {
                 var receive = await listener.Receive();
                 string message = System.Text.Encoding.UTF8.GetString(receive.Buffer);
-                Console.WriteLine($"{DateTime.Now} | {receive.RemoteEndPoint}: {message}");
-                listener.Send(message);
+                Console.WriteLine($"{DateTime.Now} | {receive.RemoteEndPoint}: {message}\n");
             }
         }
         catch (SocketException sockEx)
@@ -32,6 +37,7 @@ class Program
         finally
         {
             listener.Close();
+            Console.WriteLine("Server closed.");
         }
     }
 }

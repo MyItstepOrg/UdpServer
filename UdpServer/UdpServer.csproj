@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\UdpServer.Core\UdpServer.Core.csproj" />
     <ProjectReference Include="..\UdpServer.Services\UdpServer.Services.csproj" />
   </ItemGroup>

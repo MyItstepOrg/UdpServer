@@ -2,19 +2,22 @@
 using System.Net;
 using System.Text;
 
-namespace UdpServer.Services;
+namespace UdpServer.Services.Services;
 public class UdpService
 {
     private UdpClient socket;
-    public UdpService(IPEndPoint local) => socket = new UdpClient(local);
-    public async Task<UdpReceiveResult> Receive() => await this.socket.ReceiveAsync();
+    public UdpService(IPEndPoint local)
+    {
+        socket = new UdpClient(local);
+        socket.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
+    }
+    public async Task<UdpReceiveResult> Receive() => await socket.ReceiveAsync();
     public bool Send(string datagramm)
     {
-        socket.EnableBroadcast = true;
         try
         {
             byte[] data = Encoding.Unicode.GetBytes(datagramm);
-            this.socket.Send(data);
+            socket.Send(data);
         }
         catch (SocketException ex)
         {
@@ -28,5 +31,5 @@ public class UdpService
         }
         return true;
     }
-    public void Close() => this.socket.Close();
+    public void Close() => socket.Close();
 }
