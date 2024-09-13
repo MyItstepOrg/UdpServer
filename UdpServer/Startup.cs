@@ -4,10 +4,12 @@ using UdpServer.Core.Data.Source.Local.Dal.DataContext;
 using Microsoft.EntityFrameworkCore;
 using UdpServer;
 
+//Connection string
 string connectionString = "Data Source=(localdb)\\MSSqlLocalDb;Database=BooksStore";
 
 try
 {
+    //Initializing app
     Host.CreateDefaultBuilder()
         .ConfigureServices(services =>
         {
