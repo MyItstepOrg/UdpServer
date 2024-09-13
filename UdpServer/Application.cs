@@ -4,40 +4,38 @@ using UdpServer.Services.Services;
 using UdpServer.Core.Data.Source.Remote;
 using System.Text;
 using System.Text.Json;
-using UdpServer.Core.Data.Dto;
+using System.Diagnostics;
 
 namespace UdpServer;
 
 //TODO: Add services
-public class Application(ChatService chats, ClientService clients)
+public class Application(ChatService chats, UsersService users)
 {
     //Data
     private readonly ChatService chats = chats;
-    private readonly ClientService clients = clients;
+    private readonly UsersService users = users;
 
     //Server
     public required Udp server;
+    IPAddress ip = IPAddress.Parse("127.0.0.1");
+    int port = 1025;
 
     public void Start()
     {
         //Initializing server
-        server = new(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1024));
+        server = new(new IPEndPoint(ip, port));
         try
         {
-            Console.ForegroundColor = ConsoleColor.White;
-            //Start receiving data
-            Thread threadReceive = new Thread(new ThreadStart(this.Receive));
-            threadReceive.IsBackground = true;
-            threadReceive.Start();
-
-            //Register clients, that connect to port
-            Thread threadRegClients = new Thread(new ThreadStart(this.RegClients));
-            threadRegClients.IsBackground = true;
-            threadRegClients.Start();
-
             Console.WriteLine("Server started...");
             Console.WriteLine("Waiting for clients...\n");
-            //Console.ForegroundColor = ConsoleColor.Red;
+
+            //Register users
+            Thread regUsers = new Thread(new ThreadStart(RegClients));
+            regUsers.IsBackground = true;
+            regUsers.Start();
+
+            //Begin receiving data
+            this.Receive();
         }
         catch (SocketException sockEx)
         {
@@ -53,27 +51,27 @@ public class Application(ChatService chats, ClientService clients)
             Console.WriteLine("Server closed.");
         }
     }
-    public async void Receive()
+    public void Receive()
     {
         try
         {
             while (true)
             {
                 //Receiving data
-                var receive = await server.Receive();
+                var receive = server.Receive();
                 //Decoding received data
                 string message = Encoding.UTF8.GetString(receive.Buffer);
                 //Packing data to json and sending them to client
-                if (message.ToLower() == "#connect")
+                Debug.WriteLine(message);
+                if (message.ToLower() == "#\0")
                 {
-                    SendDataDto sendData = new SendDataDto()
-                    {
-                        Clients = this.clients.GetAll(),
-                        Chats = this.chats.FindAll(
-                            c => c.ClientList.Contains(this.clients.GetByIp(receive.RemoteEndPoint)))
-                    };
-                    Send(convertToJson(sendData), receive.RemoteEndPoint);
-                    Console.WriteLine($"Data has been succesfuly sent to {clients.GetByIp(receive.RemoteEndPoint).Username}");
+                    Console.WriteLine($"{receive.RemoteEndPoint} connected!");
+                    //Console.WriteLine($"{users.GetByIp(receive.RemoteEndPoint)} connected!");
+                    //Send(
+                    //    ConvertToJson(
+                    //        this.chats.FindAll(
+                    //            c => c.UsersList.Contains(
+                    //                this.users.GetByIp(receive.RemoteEndPoint)))), receive.RemoteEndPoint);
                 }
             }
         }
@@ -93,15 +91,18 @@ public class Application(ChatService chats, ClientService clients)
         {
             if (!this.server.Send(data, address))
                 throw new Exception("Unable to send");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"Data has been succesfuly sent to {users.GetByIp(address)}");
+            Console.ForegroundColor = ConsoleColor.White;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Exception: {ex.Message}");
         }
     }
-    public void RegClients()
+    public void RegUsers()
     {
         //TODO: registrating clients
     }
-    public string convertToJson<T>(T item) => JsonSerializer.Serialize(item);
+    public string ConvertToJson<T>(T item) => "#info" + JsonSerializer.Serialize(item);
 }

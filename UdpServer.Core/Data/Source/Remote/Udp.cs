@@ -1,19 +1,30 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 using System.Text;
+using System.Diagnostics;
 
 namespace UdpServer.Core.Data.Source.Remote;
 public class Udp
 {
-    private UdpClient socket;
-    public Udp(IPEndPoint local) => socket = new UdpClient(local);
-    public async Task<UdpReceiveResult> Receive() => await socket.ReceiveAsync();
+    private readonly UdpClient socket;
+    public Udp(IPEndPoint local)
+    {
+        socket = new UdpClient(local);
+    }
+
+    public UdpReceiveResult Receive()
+    {
+        IPEndPoint remote = new(IPAddress.Any, 0);
+        UdpReceiveResult receive = new(this.socket.Receive(ref remote), remote);
+        Debug.WriteLine($"Message received from {remote}");
+        return receive;
+    }
     public bool Send(string datagramm, IPEndPoint endp)
     {
         try
         {
             byte[] data = Encoding.Unicode.GetBytes(datagramm);
-            socket.Send(data, endp);
+            this.socket.Send(data, endp);
         }
         catch (SocketException ex)
         {
@@ -27,5 +38,5 @@ public class Udp
         }
         return true;
     }
-    public void Close() => socket.Close();
+    public void Close() => this.socket.Close();
 }

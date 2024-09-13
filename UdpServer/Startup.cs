@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using UdpServer.Core.Data.Source.Local.Dal.DataContext;
 using Microsoft.EntityFrameworkCore;
 using UdpServer;
+using UdpServer.Services.Services;
 
 //Connection string
 string connectionString = "Data Source=(localdb)\\MSSqlLocalDb;Database=BooksStore";
@@ -14,6 +15,8 @@ try
         .ConfigureServices(services =>
         {
             services.AddDbContext<DataContext>(options => options.UseSqlite(connectionString));
+            services.AddSingleton<ChatService>();
+            services.AddSingleton<UsersService>();
             services.AddSingleton<Application>();
         })
         .Build()
