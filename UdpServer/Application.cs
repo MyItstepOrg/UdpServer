@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 using UdpServer.Services.Services;
+using UdpServer.Core.Data.Source.Remote;
 
 namespace UdpServer;
 
@@ -13,7 +14,7 @@ public class Application(ChatService chats, ClientService clients, GroupService 
 
     public async void Start()
     {
-        UdpService listener = new(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1024));
+        Udp listener = new(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1024));
         Console.WriteLine("Server started...");
         Console.WriteLine("Waiting for clients...\n");
 

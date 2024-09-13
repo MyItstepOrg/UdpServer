@@ -2,11 +2,11 @@
 using System.Net;
 using System.Text;
 
-namespace UdpServer.Services.Services;
-public class UdpService
+namespace UdpServer.Core.Data.Source.Remote;
+public class Udp
 {
     private UdpClient socket;
-    public UdpService(IPEndPoint local)
+    public Udp(IPEndPoint local)
     {
         socket = new UdpClient(local);
         socket.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
