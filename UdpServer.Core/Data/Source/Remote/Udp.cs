@@ -6,18 +6,14 @@ namespace UdpServer.Core.Data.Source.Remote;
 public class Udp
 {
     private UdpClient socket;
-    public Udp(IPEndPoint local)
-    {
-        socket = new UdpClient(local);
-        socket.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.Broadcast, true);
-    }
+    public Udp(IPEndPoint local) => socket = new UdpClient(local);
     public async Task<UdpReceiveResult> Receive() => await socket.ReceiveAsync();
-    public bool Send(string datagramm)
+    public bool Send(string datagramm, IPEndPoint endp)
     {
         try
         {
             byte[] data = Encoding.Unicode.GetBytes(datagramm);
-            socket.Send(data);
+            socket.Send(data, endp);
         }
         catch (SocketException ex)
         {

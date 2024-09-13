@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using UdpServer.Core.Data.Source.Local.Dal.DataContext;
 
 namespace UdpServer.Services.Services.Repository;
@@ -18,4 +19,5 @@ public class Repository<T>(DataContext data) where T : class
     }
     public List<T> GetAll() => this.data.Set<T>().ToList();
     public T? Find(Expression<Func<T, bool>> predicate) => this.data.Set<T>().Find(predicate);
+    public List<T> FindAll(Expression<Func<T, bool>> predicate) => this.data.Set<T>().Where(predicate).ToList();
 }

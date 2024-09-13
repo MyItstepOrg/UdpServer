@@ -6,4 +6,5 @@ namespace UdpServer.Services.Services;
 public class ChatService(DataContext data) : Repository<ChatDto>(data)
 {
     public ChatDto? GetById(int id) => this.Find(c => c.Id == id);
+    public ChatDto? GetByName(string name) => this.Find(g => g.Name == name);
 }
