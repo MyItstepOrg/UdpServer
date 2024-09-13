@@ -30,7 +30,7 @@ public class Application(ChatService chats, UsersService users)
             Console.WriteLine("Waiting for clients...\n");
 
             //Register users
-            Thread regUsers = new Thread(new ThreadStart(RegClients));
+            Thread regUsers = new Thread(new ThreadStart(RegUsers));
             regUsers.IsBackground = true;
             regUsers.Start();
 
