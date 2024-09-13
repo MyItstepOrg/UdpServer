@@ -59,8 +59,11 @@ public class Application(ChatService chats, ClientService clients)
         {
             while (true)
             {
+                //Receiving data
                 var receive = await server.Receive();
+                //Decoding received data
                 string message = Encoding.UTF8.GetString(receive.Buffer);
+                //Packing data to json and sending them to client
                 if (message.ToLower() == "#connect")
                 {
                     SendDataDto sendData = new SendDataDto()
@@ -70,6 +73,7 @@ public class Application(ChatService chats, ClientService clients)
                             c => c.ClientList.Contains(this.clients.GetByIp(receive.RemoteEndPoint)))
                     };
                     Send(convertToJson(sendData), receive.RemoteEndPoint);
+                    Console.WriteLine($"Data has been succesfuly sent to {clients.GetByIp(receive.RemoteEndPoint).Username}");
                 }
             }
         }
@@ -84,8 +88,16 @@ public class Application(ChatService chats, ClientService clients)
     }
     public void Send(string data, IPEndPoint address)
     {
-        //TODO: proper send method
         this.server.Send(data, address);
+        try
+        {
+            if (!this.server.Send(data, address))
+                throw new Exception("Unable to send");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
     }
     public void RegClients()
     {
