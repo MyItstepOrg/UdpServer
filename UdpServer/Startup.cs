@@ -6,7 +6,7 @@ using UdpServer;
 using UdpServer.Services.Services;
 
 //Connection string
-string connectionString = "Data Source=(localdb)\\MSSqlLocalDb;Database=BooksStore";
+string connectionString = "Data Source=(localdb)\\MSSqlLocalDb;Database=UdpChat";
 
 try
 {

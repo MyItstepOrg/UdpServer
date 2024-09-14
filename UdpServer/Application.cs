@@ -5,6 +5,7 @@ using UdpServer.Core.Data.Source.Remote;
 using System.Text;
 using System.Text.Json;
 using System.Diagnostics;
+using UdpServer.Core.Data.Dto;
 
 namespace UdpServer;
 
@@ -30,9 +31,9 @@ public class Application(ChatService chats, UsersService users)
             Console.WriteLine("Waiting for clients...\n");
 
             //Register users
-            Thread regUsers = new Thread(new ThreadStart(RegUsers));
-            regUsers.IsBackground = true;
-            regUsers.Start();
+            //Thread regUsers = new Thread(new ThreadStart(RegUser));
+            //regUsers.IsBackground = true;
+            //regUsers.Start();
 
             //Begin receiving data
             this.Receive();
@@ -66,6 +67,7 @@ public class Application(ChatService chats, UsersService users)
                 if (message.ToLower() == "#\0")
                 {
                     Console.WriteLine($"{receive.RemoteEndPoint} connected!");
+                    this.RegUser(receive.RemoteEndPoint);
                     //Console.WriteLine($"{users.GetByIp(receive.RemoteEndPoint)} connected!");
                     //Send(
                     //    ConvertToJson(
@@ -100,9 +102,18 @@ public class Application(ChatService chats, UsersService users)
             Console.WriteLine($"Exception: {ex.Message}");
         }
     }
-    public void RegUsers()
+    public void RegUser(IPEndPoint ip)
     {
-        //TODO: registrating clients
+        chats.Add(new Core.Data.Dto.ChatDto()
+        {
+            Name = "Main"
+        });
+        if (users.GetByIp(ip) is not null)
+            users.Add(new UserDto()
+            {
+                Username = ip.ToString(),
+                Address = ip,
+            });
     }
     public string ConvertToJson<T>(T item) => "#info" + JsonSerializer.Serialize(item);
 }
