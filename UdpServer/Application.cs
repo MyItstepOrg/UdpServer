@@ -28,12 +28,6 @@ public class Application(ChatService chats, UsersService users)
         try
         {
             Console.WriteLine("Server started...");
-            Console.WriteLine("Waiting for clients...\n");
-
-            //Register users
-            //Thread regUsers = new Thread(new ThreadStart(RegUser));
-            //regUsers.IsBackground = true;
-            //regUsers.Start();
 
             //Begin receiving data
             this.Receive();
@@ -54,36 +48,36 @@ public class Application(ChatService chats, UsersService users)
     }
     public void Receive()
     {
-        try
+        Console.WriteLine($"Begin receiving data from port {this.port}...");
+        while (true)
         {
-            while (true)
+            try
             {
                 //Receiving data
                 var receive = server.Receive();
                 //Decoding received data
-                string message = Encoding.UTF8.GetString(receive.Buffer);
+                string message = Encoding.Unicode.GetString(receive.Buffer);
                 //Packing data to json and sending them to client
-                Debug.WriteLine(message);
-                if (message.ToLower() == "#\0")
+                if (message.ToLower() == "#connect")
                 {
                     Console.WriteLine($"{receive.RemoteEndPoint} connected!");
                     this.RegUser(receive.RemoteEndPoint);
-                    //Console.WriteLine($"{users.GetByIp(receive.RemoteEndPoint)} connected!");
-                    //Send(
-                    //    ConvertToJson(
-                    //        this.chats.FindAll(
-                    //            c => c.UsersList.Contains(
-                    //                this.users.GetByIp(receive.RemoteEndPoint)))), receive.RemoteEndPoint);
+                    Console.WriteLine($"{users.GetByIp(receive.RemoteEndPoint)} connected!");
+                    Send(
+                        ConvertToJson(
+                            this.chats.FindAll(
+                                c => c.UsersList.Contains(
+                                    this.users.GetByIp(receive.RemoteEndPoint)))), receive.RemoteEndPoint);
                 }
             }
-        }
-        catch (SocketException sockEx)
-        {
-            Console.WriteLine($"Socket exception: {sockEx.Message}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Exception: {ex.Message}");
+            catch (SocketException sockEx)
+            {
+                Console.WriteLine($"Socket exception: {sockEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+            }
         }
     }
     public void Send(string data, IPEndPoint address)
@@ -99,12 +93,13 @@ public class Application(ChatService chats, UsersService users)
         }
         catch (Exception ex)
         {
+            Console.WriteLine("Failed to send data!");
             Console.WriteLine($"Exception: {ex.Message}");
         }
     }
     public void RegUser(IPEndPoint ip)
     {
-        chats.Add(new Core.Data.Dto.ChatDto()
+        chats.Add(new UdpServer.Core.Data.Dto.ChatDto()
         {
             Name = "Main"
         });

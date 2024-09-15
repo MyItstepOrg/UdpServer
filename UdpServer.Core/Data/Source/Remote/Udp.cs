@@ -16,7 +16,6 @@ public class Udp
     {
         IPEndPoint remote = new(IPAddress.Any, 0);
         UdpReceiveResult receive = new(this.socket.Receive(ref remote), remote);
-        Debug.WriteLine($"Message received from {remote}");
         return receive;
     }
     public bool Send(string datagramm, IPEndPoint endp)

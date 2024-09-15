@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UdpServer", "UdpServer\UdpServer.csproj", "{F2B32910-CFF8-44C1-BFAE-CBE445D34D31}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UdpServer", "UdpServer\UdpServer.csproj", "{F2B32910-CFF8-44C1-BFAE-CBE445D34D31}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UdpServer.Core", "UdpServer.Core\UdpServer.Core.csproj", "{F16883DC-7166-4602-BBFD-63B5501CB214}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UdpServer.Core", "UdpServer.Core\UdpServer.Core.csproj", "{F16883DC-7166-4602-BBFD-63B5501CB214}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UdpServer.Services", "UdpServer.Services\UdpServer.Services.csproj", "{0FC17950-812D-42DC-B8D1-FC2AAC90EA99}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UdpServer.Services", "UdpServer.Services\UdpServer.Services.csproj", "{0FC17950-812D-42DC-B8D1-FC2AAC90EA99}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

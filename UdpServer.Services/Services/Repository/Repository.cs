@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using UdpServer.Core.Data.Source.Local.Dal.DataContext;
 
 namespace UdpServer.Services.Services.Repository;
