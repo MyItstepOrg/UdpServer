@@ -17,6 +17,6 @@ public class Repository<T>(DataContext data) where T : class
         this.data.SaveChanges();
     }
     public List<T> GetAll() => this.data.Set<T>().ToList();
-    public T? Find(Expression<Func<T, bool>> predicate) => this.data.Set<T>().Find(predicate);
+    public T? Find(Expression<Func<T, bool>> predicate) => this.data.Set<T>().FirstOrDefault(predicate);
     public List<T> FindAll(Expression<Func<T, bool>> predicate) => this.data.Set<T>().Where(predicate).ToList();
 }

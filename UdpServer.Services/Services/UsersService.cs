@@ -8,5 +8,5 @@ public class UsersService(DataContext data) : Repository<UserDto>(data)
 {
     public UserDto? Get(int id) => this.Find(c => c.Id == id);
     public UserDto? GetByUser(string username) => this.Find(c => c.Username == username);
-    public UserDto? GetByIp(IPEndPoint ip) => this.Find(c => c.Address == ip);
+    public UserDto? GetByIp(IPEndPoint ip) => this.Find(c => c.IpAddress == ip.Address.ToString() && c.Port == ip.Port);
 }

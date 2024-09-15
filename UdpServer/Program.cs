@@ -6,7 +6,7 @@ using UdpServer;
 using UdpServer.Services.Services;
 
 //Connection string
-string connectionString = "Data Source=(localdb)\\MSSqlLocalDb;Database=UdpChat";
+string connectionString = "Data Source=(localdb)\\MSSqlLocalDb;Initial Catalog=UdpChatServerDb;Integrated Security=SSPI;";
 
 try
 {
@@ -14,10 +14,10 @@ try
     Host.CreateDefaultBuilder()
         .ConfigureServices(services =>
         {
-            services.AddDbContext<DataContext>(options => options.UseSqlite(connectionString));
-            services.AddSingleton<ChatService>();
-            services.AddSingleton<UsersService>();
-            services.AddSingleton<Application>();
+            services.AddDbContext<DataContext>(options => options.UseSqlServer(connectionString));
+            services.AddScoped<ChatService>();
+            services.AddScoped<UsersService>();
+            services.AddScoped<Application>();
         })
         .Build()
         .Services.GetRequiredService<Application>()

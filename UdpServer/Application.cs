@@ -4,7 +4,6 @@ using UdpServer.Services.Services;
 using UdpServer.Core.Data.Source.Remote;
 using System.Text;
 using System.Text.Json;
-using System.Diagnostics;
 using UdpServer.Core.Data.Dto;
 
 namespace UdpServer;
@@ -29,8 +28,13 @@ public class Application(ChatService chats, UsersService users)
         {
             Console.WriteLine("Server started...");
 
+            chats.Add(new UdpServer.Core.Data.Dto.ChatDto()
+            {
+                Name = "Main"
+            });
+
             //Begin receiving data
-            this.Receive();
+            Receive();
         }
         catch (SocketException sockEx)
         {
@@ -48,7 +52,7 @@ public class Application(ChatService chats, UsersService users)
     }
     public void Receive()
     {
-        Console.WriteLine($"Begin receiving data from port {this.port}...");
+        Console.WriteLine($"Begin receiving data from port {port}...");
         while (true)
         {
             try
@@ -61,13 +65,27 @@ public class Application(ChatService chats, UsersService users)
                 if (message.ToLower() == "#connect")
                 {
                     Console.WriteLine($"{receive.RemoteEndPoint} connected!");
-                    this.RegUser(receive.RemoteEndPoint);
+                    RegUser(receive.RemoteEndPoint);
                     Console.WriteLine($"{users.GetByIp(receive.RemoteEndPoint)} connected!");
                     Send(
                         ConvertToJson(
-                            this.chats.FindAll(
+                            chats.FindAll(
                                 c => c.UsersList.Contains(
-                                    this.users.GetByIp(receive.RemoteEndPoint)))), receive.RemoteEndPoint);
+                                    users.GetByIp(receive.RemoteEndPoint)))), receive.RemoteEndPoint);
+                }
+                else
+                {
+                    chats.GetByName("Main")
+                        .MessageHistory
+                        .Add(new MessageDto()
+                        {
+                            Time = DateTime.Now,
+                            Content = message,
+                            Sender = users.GetByIp(receive.RemoteEndPoint).Username
+                        });
+                    foreach (var c in chats.GetByName("Main").UsersList)
+                        if (c.Address != receive.RemoteEndPoint)
+                            Send(message, c.Address);
                 }
             }
             catch (SocketException sockEx)
@@ -82,10 +100,10 @@ public class Application(ChatService chats, UsersService users)
     }
     public void Send(string data, IPEndPoint address)
     {
-        this.server.Send(data, address);
+        server.Send(data, address);
         try
         {
-            if (!this.server.Send(data, address))
+            if (!server.Send(data, address))
                 throw new Exception("Unable to send");
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"Data has been succesfuly sent to {users.GetByIp(address)}");
@@ -99,15 +117,21 @@ public class Application(ChatService chats, UsersService users)
     }
     public void RegUser(IPEndPoint ip)
     {
-        chats.Add(new UdpServer.Core.Data.Dto.ChatDto()
+        if (users.GetByIp(ip) is null)
         {
-            Name = "Main"
-        });
-        if (users.GetByIp(ip) is not null)
             users.Add(new UserDto()
             {
                 Username = ip.ToString(),
-                Address = ip,
+                IpAddress = ip.Address.ToString(),
+                Port = ip.Port
+            });
+        }
+        if (!this.chats.GetByName("Main").UsersList.Contains(this.users.GetByIp(ip)))
+            this.chats.GetByName("Main").UsersList.Add(new UserDto()
+            {
+                Username = ip.ToString(),
+                IpAddress = ip.Address.ToString(),
+                Port = ip.Port
             });
     }
     public string ConvertToJson<T>(T item) => "#info" + JsonSerializer.Serialize(item);
