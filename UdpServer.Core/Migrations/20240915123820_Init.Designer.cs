@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using UdpServer.Core.Data.Source.Local.Dal.DataContext;
+using UdpServer.Core.Data.Source.Dal.DataContext;
+
 
 #nullable disable
 

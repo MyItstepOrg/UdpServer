@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using UdpServer.Core.Data.Source.Local.Dal.DataContext;
 using Microsoft.EntityFrameworkCore;
 using UdpServer;
-using UdpServer.Services.Services;
+using UdpServer.Services.Services.DataAccess;
+using UdpServer.Core.Data.Source.Dal.DataContext;
 
 //Connection string
 string connectionString = "Data Source=(localdb)\\MSSqlLocalDb;Initial Catalog=UdpChatServerDb;Integrated Security=SSPI;";

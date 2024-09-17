@@ -1,10 +1,9 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 using UdpServer.Services.Services;
-using UdpServer.Core.Data.Source.Remote;
 using System.Text;
-using System.Text.Json;
 using UdpServer.Core.Data.Dto;
+using UdpServer.Services.Services.DataAccess;
 
 namespace UdpServer;
 
@@ -14,6 +13,9 @@ public class Application(ChatService chats, UsersService users)
     //Data
     private readonly ChatService chats = chats;
     private readonly UsersService users = users;
+
+    //Data processor
+    JsonConverter jsonConverter = new();
 
     //Server
     public required Udp server;
@@ -26,27 +28,21 @@ public class Application(ChatService chats, UsersService users)
         server = new(new IPEndPoint(ip, port));
         try
         {
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("Server started...");
-
-            chats.Add(new UdpServer.Core.Data.Dto.ChatDto()
-            {
-                Name = "Main"
-            });
 
             //Begin receiving data
             Receive();
         }
-        catch (SocketException sockEx)
-        {
-            Console.WriteLine($"Socket exception: {sockEx.Message}");
-        }
         catch (Exception ex)
         {
-            Console.WriteLine($"Exception: {ex.Message}");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"{ex.Source} Exception: {ex.Message}");
         }
         finally
         {
             server.Close();
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("Server closed.");
         }
     }
@@ -61,78 +57,86 @@ public class Application(ChatService chats, UsersService users)
                 var receive = server.Receive();
                 //Decoding received data
                 string message = Encoding.Unicode.GetString(receive.Buffer);
-                //Packing data to json and sending them to client
-                if (message.ToLower() == "#connect")
+                //Deserializing received json from client
+                var dataPacket = jsonConverter.Desirialize<DataPacket>(message);
+                //TODO: handle commands sent by user
+                switch (dataPacket.Command.ToLower())
                 {
-                    Console.WriteLine($"{receive.RemoteEndPoint} connected!");
-                    RegUser(receive.RemoteEndPoint);
-                    Console.WriteLine($"{users.GetByIp(receive.RemoteEndPoint)} connected!");
-                    Send(
-                        ConvertToJson(
-                            chats.FindAll(
-                                c => c.UsersList.Contains(
-                                    users.GetByIp(receive.RemoteEndPoint)))), receive.RemoteEndPoint);
+                    case "#connect":
+                        RegUser(dataPacket.UserId, receive.RemoteEndPoint);
+                        break;
+                    case "#getchats":
+                        chats.GetChatsForUser(users.Get(dataPacket.UserId));
+                        break;
+                    case "#getchatcontent":
+                        chats.Get(int.Parse(dataPacket.Content));
+                        break;
+                    case "#sendtochat":
+                        break;
+                    case "#updateuserinfo":
+                        break;
+                    case "#createnewchat":
+                        break;
+                    case "#adduserstochat":
+                        break;
+                    default:
+                        throw new Exception("Unknown command!");
+
                 }
-                else
-                {
-                    chats.GetByName("Main")
-                        .MessageHistory
-                        .Add(new MessageDto()
-                        {
-                            Time = DateTime.Now,
-                            Content = message,
-                            Sender = users.GetByIp(receive.RemoteEndPoint).Username
-                        });
-                    foreach (var c in chats.GetByName("Main").UsersList)
-                        if (c.Address != receive.RemoteEndPoint)
-                            Send(message, c.Address);
-                }
-            }
-            catch (SocketException sockEx)
-            {
-                Console.WriteLine($"Socket exception: {sockEx.Message}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception: {ex.Message}");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"{ex.Source} Exception: {ex.Message}");
             }
         }
     }
-    public void Send(string data, IPEndPoint address)
+    public void RegUser(int id, IPEndPoint ip)
     {
-        server.Send(data, address);
+        UserDto newUser = new()
+        {
+            Id = id,
+            Username = "user",
+            IpAddress = ip.Address.ToString(),
+            Port = ip.Port
+        };
+        if (users.Get(id) is null)
+        {
+            users.Add(newUser);
+            Console.WriteLine($"New user {newUser.Username + "#" + newUser.Id} registrated!");
+        }
+        else
+        {
+            users.Update(id, newUser);
+            Console.WriteLine($"{users.Get(id)} connected");
+        }
+        DataPacket userUpdatePacket = new()
+        {
+            Command = "#updateuserinfo",
+            Content = jsonConverter.Serialize(users.Get(newUser.Id))
+        };
+        Send(jsonConverter.Serialize(userUpdatePacket), newUser.Id);
+    }
+    public void Send(string data, int id)
+    {
         try
         {
-            if (!server.Send(data, address))
-                throw new Exception("Unable to send");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Data has been succesfuly sent to {users.GetByIp(address)}");
-            Console.ForegroundColor = ConsoleColor.White;
+            UserDto user = users.Get(id);
+            IPEndPoint userAddress = new (IPAddress.Parse(user.IpAddress), user.Port);
+            if (!server.Send(data, userAddress))
+                throw new Exception("Unable to send! User is Unreachable!");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"Data has been succesfuly sent to {userAddress}");
         }
         catch (Exception ex)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Failed to send data!");
-            Console.WriteLine($"Exception: {ex.Message}");
+            Console.WriteLine($"{ex.Source} Exception: {ex.Message}");
         }
     }
-    public void RegUser(IPEndPoint ip)
+    public void SendToChat(int chatId)
     {
-        if (users.GetByIp(ip) is null)
-        {
-            users.Add(new UserDto()
-            {
-                Username = ip.ToString(),
-                IpAddress = ip.Address.ToString(),
-                Port = ip.Port
-            });
-        }
-        if (!this.chats.GetByName("Main").UsersList.Contains(this.users.GetByIp(ip)))
-            this.chats.GetByName("Main").UsersList.Add(new UserDto()
-            {
-                Username = ip.ToString(),
-                IpAddress = ip.Address.ToString(),
-                Port = ip.Port
-            });
+
     }
-    public string ConvertToJson<T>(T item) => "#info" + JsonSerializer.Serialize(item);
 }

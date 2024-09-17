@@ -1,16 +1,12 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 using System.Text;
-using System.Diagnostics;
 
-namespace UdpServer.Core.Data.Source.Remote;
+namespace UdpServer.Services.Services;
 public class Udp
 {
     private readonly UdpClient socket;
-    public Udp(IPEndPoint local)
-    {
-        socket = new UdpClient(local);
-    }
+    public Udp(IPEndPoint local) => socket = new UdpClient(local);
 
     public UdpReceiveResult Receive()
     {

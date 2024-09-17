@@ -10,8 +10,8 @@ public class UserDto
     public int Port { get; set; }
 
     // Not mapped to database, just for convenience
-    public IPEndPoint Address
-    {
-        get => new IPEndPoint(IPAddress.Parse(this.IpAddress), this.Port);
-    }
+    //public IPEndPoint Address
+    //{
+    //    get => new IPEndPoint(IPAddress.Parse(this.IpAddress), this.Port);
+    //}
 }

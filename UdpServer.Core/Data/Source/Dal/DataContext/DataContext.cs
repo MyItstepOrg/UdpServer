@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using UdpServer.Core.Data.Dto;
 
-namespace UdpServer.Core.Data.Source.Local.Dal.DataContext;
+namespace UdpServer.Core.Data.Source.Dal.DataContext;
 public class DataContext(DbContextOptions<DataContext> options) : DbContext(options)
 {
     public DbSet<UserDto> Users { get; set; }
