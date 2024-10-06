@@ -11,7 +11,7 @@ public class Udp
     public UdpReceiveResult Receive()
     {
         IPEndPoint remote = new(IPAddress.Any, 0);
-        UdpReceiveResult receive = new(this.socket.Receive(ref remote), remote);
+        UdpReceiveResult receive = new(socket.Receive(ref remote), remote);
         return receive;
     }
     public bool Send(string datagramm, IPEndPoint endp)
@@ -19,19 +19,18 @@ public class Udp
         try
         {
             byte[] data = Encoding.Unicode.GetBytes(datagramm);
-            this.socket.Send(data, endp);
-        }
-        catch (SocketException ex)
-        {
-            Console.WriteLine("Socket exception: " + ex.Message);
-            return false;
+            socket.Send(data, endp);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"Data has been succesfuly sent to {endp}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Send exception: " + ex.Message);
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Failed to send data!");
+            Console.WriteLine($"Target site: {ex.TargetSite} Exception: {ex.Message}");
             return false;
         }
         return true;
     }
-    public void Close() => this.socket.Close();
+    public void Close() => socket.Close();
 }
